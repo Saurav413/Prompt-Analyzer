@@ -19,10 +19,11 @@ def call_llm(prompt: str):
     }
 
     print("=== Sending to Groq ===")
-    print("Headers:", headers)
-    print("Payload:", data)
+    print("Payload model:", data["model"])
 
-    r = requests.post(GROQ_URL, headers=headers, json=data)
+    session = requests.Session()
+    session.trust_env = False
+    r = session.post(GROQ_URL, headers=headers, json=data, timeout=config.GROQ_TIMEOUT)
 
     print("STATUS CODE:", r.status_code)
     print("RESPONSE:", r.text)

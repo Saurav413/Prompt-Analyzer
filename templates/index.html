@@ -4,41 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prompt Analyzer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <div class="page-bg"></div>
+
     <div class="container">
-        <header>
+        <header class="hero">
+            <div class="hero-badge">AI-powered feedback</div>
             <h1>Prompt Analyzer</h1>
-            <p>Get a score, understand issues, and improve your prompts</p>
+            <p>Score your prompts, spot weaknesses, and get a stronger rewrite in seconds.</p>
         </header>
 
-        <main>
-            <form method="POST" class="prompt-form">
-                <label for="user_prompt">Your Prompt</label>
-                <textarea id="user_prompt" name="user_prompt" placeholder="Type or paste your prompt here..." rows="6">{{ user_prompt }}</textarea>
-                <button type="submit">Analyze</button>
-            </form>
+        <main class="main-grid">
+            <section class="card input-card">
+                <form method="POST" class="prompt-form" id="analyze-form">
+                    <div class="form-header">
+                        <label for="user_prompt">Your prompt</label>
+                        <span class="char-count" id="char-count">0 characters</span>
+                    </div>
 
-            {% if score is not none %}
-            <div class="score-ring-container">
-                <div class="score-ring" style="--score: {{ score }};">
-                    <span>{{ score }}/10</span>
-                </div>
-                <div class="score-label-text">
-                    {% if score >= 7 %}Excellent{% elif score >=4 %}Average{% else %}Poor{% endif %}
-                </div>
-            </div>
-            {% endif %}
+                    <textarea
+                        id="user_prompt"
+                        name="user_prompt"
+                        placeholder="Paste a prompt you use with ChatGPT, Claude, or any LLM..."
+                        rows="7"
+                        autofocus
+                    >{{ user_prompt }}</textarea>
 
-            {% if result %}
-            <div class="result-box">
-                <h2>Analysis</h2>
-                <div class="result-content">{{ result|safe }}</div>
-            </div>
+                    <div class="example-row">
+                        <span class="example-label">Try an example</span>
+                        <div class="example-chips">
+                            <button type="button" class="chip" data-example="Write a blog post about climate change">Blog post</button>
+                            <button type="button" class="chip" data-example="Explain quantum computing to a 10-year-old">Explain simply</button>
+                            <button type="button" class="chip" data-example="help me code">Vague prompt</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submit-btn">
+                        <span class="btn-label">Analyze prompt</span>
+                        <span class="btn-spinner" aria-hidden="true"></span>
+                    </button>
+                </form>
+            </section>
+
+            {% if score is not none or result %}
+            <section class="results-panel">
+                {% if score is not none %}
+                <div class="card score-card score-card--{% if score >= 7 %}high{% elif score >= 4 %}mid{% else %}low{% endif %}">
+                    <p class="score-card-label">Prompt score</p>
+                    <div class="score-ring-wrap">
+                        <div class="score-ring" style="--score: {{ score }};">
+                            <div class="score-ring-inner">
+                                <span class="score-value">{{ score }}</span>
+                                <span class="score-max">/ 10</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="score-label-text">
+                        {% if score >= 7 %}
+                        Excellent — clear, specific, and actionable
+                        {% elif score >= 4 %}
+                        Average — room to improve clarity or structure
+                        {% else %}
+                        Needs work — too vague or missing key details
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+
+                {% if result %}
+                <div class="card result-box">
+                    <div class="result-header">
+                        <h2>Analysis</h2>
+                        <span class="result-tag">LLaMA 3.3</span>
+                    </div>
+                    <div class="result-content{% if result.startswith('Error:') %} result-content--error{% endif %}">{{ result|safe }}</div>
+                </div>
+                {% endif %}
+            </section>
+            {% else %}
+            <aside class="card tips-card">
+                <h2>What we check</h2>
+                <ul class="tips-list">
+                    <li><strong>Clarity</strong> — Is the goal obvious?</li>
+                    <li><strong>Specificity</strong> — Enough context and constraints?</li>
+                    <li><strong>Structure</strong> — Easy for the model to follow?</li>
+                    <li><strong>Output format</strong> — Do you say what you want back?</li>
+                </ul>
+            </aside>
             {% endif %}
         </main>
+
+        <footer class="site-footer">
+            <span>Powered by Groq · LLaMA 3.3 70B</span>
+        </footer>
     </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
